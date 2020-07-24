@@ -44,9 +44,53 @@ import sys
 import math
 import qwiic_scmd
 
-myMotor = qwiic_scmd.QwiicScmd()
+class Autophat:
+
+	def __init__(self):
+		self.myMotor = qwiic_scmd.QwiicScmd()
+
+		self.R_MTR = 0
+		self.L_MTR = 1
+		self.FWD = 0
+		self.BWD = 1
+
+		if self.myMotor.connected == False:
+			print("Motor Driver not connected. Check connections.", \
+				file=sys.stderr)
+			return
+		self.myMotor.begin()
+		print("Motor initialized.")
+		time.sleep(.250)
+
+		# Zero speeds
+		self.forward(150)
+
+	def forward(self, speed):
+		self.myMotor.set_drive(0, 0, 150)
+		self.myMotor.set_drive(self.L_MTR, self.FWD, speed)
+
+	def reverse(self, speed):
+		self.myMotor.set_drive(self.R_MTR, self.BWD, speed)
+		self.myMotor.set_drive(self.L_MTR, self.BWD, speed)
+
+	def spinRight(self, speed):
+		self.myMotor.set_drive(self.R_MTR, self.FWD, speed)
+		self.myMotor.set_drive(self.L_MTR, self.BWD, speed)
+
+	def spinLeft(self, speed):
+		self.myMotor.set_drive(self.R_MTR, self.BWD, speed)
+		self.myMotor.set_drive(self.L_MTR, self.FWD, speed)
+
+	def stop(self):
+		self.myMotor.set_drive(self.R_MTR, self.FWD, 0)
+		self.myMotor.set_drive(self.L_MTR, self.FWD, 0)
+
+	def cleanup(self):
+		self.myMotor.disable()
+
 
 def runExample():
+
 	print("Motor Test.")
 	R_MTR = 0
 	L_MTR = 1
@@ -69,20 +113,26 @@ def runExample():
 	print("Motor enabled")
 	time.sleep(.250)
 
+	myMotor.set_drive(R_MTR,FWD,255)
+	myMotor.set_drive(L_MTR,FWD,255)
+
 	while True:
-		speed = 100
-		for speed in range(100,200):
-			print(speed)
-			myMotor.set_drive(R_MTR,FWD,speed)
-			myMotor.set_drive(L_MTR,BWD,speed)
-			time.sleep(.05)
-		for speed in range(200,100, -1):
-			print(speed)
-			myMotor.set_drive(R_MTR,FWD,speed)
-			myMotor.set_drive(L_MTR,BWD,speed)
-			time.sleep(.05)
+		time.sleep(.05)
+#	while True:
+#		speed = 100
+#		for speed in range(0,255):
+#			print(speed)
+#			myMotor.set_drive(R_MTR,FWD,speed)
+#			myMotor.set_drive(L_MTR,BWD,speed)
+#			time.sleep(.05)
+#		for speed in range(255,0,-1):
+#			print(speed)
+#			myMotor.set_drive(R_MTR,FWD,speed)
+#			myMotor.set_drive(L_MTR,BWD,speed)
+#			time.sleep(.05)
 
 if __name__ == '__main__':
+	myMotor=qwiic_scmd.QwiicScmd()
 	try:
 		runExample()
 	except (KeyboardInterrupt, SystemExit) as exErr:
