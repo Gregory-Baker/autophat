@@ -19,7 +19,7 @@ import qwiic_scmd
 
 class Autophat:
 
-    def __init__(self):
+	def __init__(self):
 		self.myMotor = qwiic_scmd.QwiicScmd()
 
 		self.R_MTR = 0
@@ -63,27 +63,27 @@ class Autophat:
 		self.myMotor.disable()
 
 def readchar():
-    fd = sys.stdin.fileno()
-    old_settings = termios.tcgetattr(fd)
-    try:
-        tty.setraw(sys.stdin.fileno())
-        ch = sys.stdin.read(1)
-    finally:
-        termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
-    if ch == '0x03':
-        raise KeyboardInterrupt
-    return ch
+	fd = sys.stdin.fileno()
+	old_settings = termios.tcgetattr(fd)
+	try:
+		tty.setraw(sys.stdin.fileno())
+		ch = sys.stdin.read(1)
+	finally:
+		termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
+	if ch == '0x03':
+		raise KeyboardInterrupt
+	return ch
 
 def readkey(getchar_fn=None):
-    getchar = getchar_fn or readchar
-    c1 = getchar()
-    if ord(c1) != 0x1b:
-        return c1
-    c2 = getchar()
-    if ord(c2) != 0x5b:
-        return c1
-    c3 = getchar()
-    return chr(0x10 + ord(c3) - 65)  # 16=Up, 17=Down, 18=Right, 19=Left arrows
+	getchar = getchar_fn or readchar
+	c1 = getchar()
+	if ord(c1) != 0x1b:
+		return c1
+	c2 = getchar()
+	if ord(c2) != 0x5b:
+		return c1
+	c3 = getchar()
+	return chr(0x10 + ord(c3) - 65)  # 16=Up, 17=Down, 18=Right, 19=Left arrows
 
 # End of single character reading
 #======================================================================
@@ -101,39 +101,38 @@ autophat = Autophat()
 
 # main loop
 try:
-    while True:
-        keyp = readkey()
-        if keyp == 'w' or ord(keyp) == 16:
-            autophat.forward(speed)
-            print('Forward', speed)
-        elif keyp == 's' or ord(keyp) == 17:
-            autophat.reverse(speed)
-            print('Reverse', speed)
-        elif keyp == 'd' or ord(keyp) == 18:
-            autophat.spinRight(speed)
-            print('Spin Right', speed)
-        elif keyp == 'a' or ord(keyp) == 19:
-            autophat.spinLeft(speed)
-            print('Spin Left', speed)
-        elif keyp == '.' or keyp == '>':
-            speed = min(200, speed+10)
-            if (abs(speed) < 100):
-                speed = 100
-            print('Speed+', speed)
-        elif keyp == ',' or keyp == '<':
-            speed = max (0, speed-10)
-            if (abs(speed) < 100):
-                speed = 0
-            print('Speed-', speed)
-        elif keyp == ' ':
-            autophat.stop()
-            print('Stop')
-        elif ord(keyp) == 3:
-            break
-        time.sleep(0.05)
+	while True:
+		keyp = readkey()
+		if keyp == 'w' or ord(keyp) == 16:
+			autophat.forward(speed)
+			print('Forward', speed)
+		elif keyp == 's' or ord(keyp) == 17:
+			autophat.reverse(speed)
+			print('Reverse', speed)
+		elif keyp == 'd' or ord(keyp) == 18:
+			autophat.spinRight(speed)
+			print('Spin Right', speed)
+		elif keyp == 'a' or ord(keyp) == 19:
+			autophat.spinLeft(speed)
+			print('Spin Left', speed)
+		elif keyp == '.' or keyp == '>':
+			speed = min(200, speed+10)
+			if (abs(speed) < 100):
+				speed = 100
+			print('Speed+', speed)
+		elif keyp == ',' or keyp == '<':
+			speed = max (0, speed-10)
+			if (abs(speed) < 100):
+				speed = 0
+			print('Speed-', speed)
+		elif keyp == ' ':
+			autophat.stop()
+			print('Stop')
+		elif ord(keyp) == 3:
+			break
 
 except KeyboardInterrupt:
-    print
+	print
 
 finally:
-    autophat.cleanup()
+	autophat.cleanup()
