@@ -47,26 +47,27 @@ import qwiic_scmd
 class Autophat:
 
 	def __init__(self):
-		self.myMotor = qwiic_scmd.QwiicScmd()
+		myMotor = qwiic_scmd.QwiicScmd()
 
 		self.R_MTR = 0
 		self.L_MTR = 1
 		self.FWD = 0
 		self.BWD = 1
 
-		if self.myMotor.connected == False:
+		if myMotor.connected == False:
 			print("Motor Driver not connected. Check connections.", \
 				file=sys.stderr)
 			return
-		self.myMotor.begin()
+		myMotor.begin()
 		print("Motor initialized.")
 		time.sleep(.250)
 
 		# Zero speeds
-		self.forward(150)
+		myMotor.set_drive(0,0,150)
+		myMotor.set_drive(1,1,150)
 
 	def forward(self, speed):
-		self.myMotor.set_drive(0, 0, 150)
+		self.myMotor.set_drive(self.R_MTR, self.FWD, spee)
 		self.myMotor.set_drive(self.L_MTR, self.FWD, speed)
 
 	def reverse(self, speed):
@@ -104,6 +105,8 @@ def runExample():
 	myMotor.begin()
 	print("Motor initialized.")
 	time.sleep(.250)
+
+	myMotor.inversion_mode(1,1)
 	
 	# Zero Motor Speeds
 	myMotor.set_drive(0,0,0)
