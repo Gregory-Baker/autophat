@@ -7,13 +7,60 @@
 
 
 import time
-from autophat import Autophat
-
 #======================================================================
 # Reading single character by forcing stdin to raw mode
 import sys
 import tty
 import termios
+
+from __future__ import print_function
+import math
+import qwiic_scmd
+
+class Autophat:
+
+    def __init__(self):
+		self.myMotor = qwiic_scmd.QwiicScmd()
+
+		self.R_MTR = 0
+		self.L_MTR = 1
+		self.FWD = 0
+		self.BWD = 1
+
+		if self.myMotor.connected == False:
+			print("Motor Driver not connected. Check connections.", \
+				file=sys.stderr)
+			return
+		self.myMotor.begin()
+		print("Motor initialized.")
+		time.sleep(.250)
+
+		# Zero speeds
+		self.myMotor.set_drive(0,0,150)
+		self.myMotor.set_drive(1,1,150)
+
+	def forward(self, speed):
+		self.myMotor.set_drive(self.R_MTR, self.FWD, speed)
+		self.myMotor.set_drive(self.L_MTR, self.FWD, speed)
+
+	def reverse(self, speed):
+		self.myMotor.set_drive(self.R_MTR, self.BWD, speed)
+		self.myMotor.set_drive(self.L_MTR, self.BWD, speed)
+
+	def spinRight(self, speed):
+		self.myMotor.set_drive(self.R_MTR, self.FWD, speed)
+		self.myMotor.set_drive(self.L_MTR, self.BWD, speed)
+
+	def spinLeft(self, speed):
+		self.myMotor.set_drive(self.R_MTR, self.BWD, speed)
+		self.myMotor.set_drive(self.L_MTR, self.FWD, speed)
+
+	def stop(self):
+		self.myMotor.set_drive(self.R_MTR, self.FWD, 0)
+		self.myMotor.set_drive(self.L_MTR, self.FWD, 0)
+
+	def cleanup(self):
+		self.myMotor.disable()
 
 def readchar():
     fd = sys.stdin.fileno()
