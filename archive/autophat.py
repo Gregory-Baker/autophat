@@ -47,28 +47,28 @@ import qwiic_scmd
 class Autophat:
 
 	def __init__(self):
-		self.myMotor = qwiic_scmd.QwiicScmd()
+		myMotor = qwiic_scmd.QwiicScmd()
 
 		self.R_MTR = 0
 		self.L_MTR = 1
 		self.FWD = 0
 		self.BWD = 1
 
-		if self.myMotor.connected == False:
+		if myMotor.connected == False:
 			print("Motor Driver not connected. Check connections.", \
 				file=sys.stderr)
 			return
-		self.myMotor.begin()
+		myMotor.begin()
 		print("Motor initialized.")
 		time.sleep(.250)
 
 		# Zero speeds
-		self.myMotor.set_drive(0,0,0)
-		self.myMotor.set_drive(1,1,0)
+		myMotor.set_drive(0,0,150)
+		myMotor.set_drive(1,1,150)
 
 	def forward(self, speed):
-		self.myMotor.set_drive(self.R_MTR, self.FWD, speed)
-		self.myM	otor.set_drive(self.L_MTR, self.FWD, speed)
+		self.myMotor.set_drive(self.R_MTR, self.FWD, spee)
+		self.myMotor.set_drive(self.L_MTR, self.FWD, speed)
 
 	def reverse(self, speed):
 		self.myMotor.set_drive(self.R_MTR, self.BWD, speed)
@@ -91,32 +91,50 @@ class Autophat:
 
 
 def runExample():
-	
+
+	print("Motor Test.")
 	R_MTR = 0
 	L_MTR = 1
 	FWD = 0
 	BWD = 1
+
+	if myMotor.connected == False:
+		print("Motor Driver not connected. Check connections.", \
+			file=sys.stderr)
+		return
+	myMotor.begin()
+	print("Motor initialized.")
+	time.sleep(.250)
+
+	myMotor.inversion_mode(1,1)
 	
-	speed = 100
+	# Zero Motor Speeds
+	myMotor.set_drive(0,0,0)
+	myMotor.set_drive(1,0,0)
+	
+	myMotor.enable()
+	print("Motor enabled")
+	time.sleep(.250)
 
 	while True:
+		speed = 100
 		for speed in range(100,255):
 			print(speed)
-			autophat.myMotor.set_drive(R_MTR,FWD,speed)
-			autophat.myMotor.set_drive(L_MTR,BWD,speed)
-			time.sleep(.1)
+			myMotor.set_drive(R_MTR,FWD,speed)
+			myMotor.set_drive(L_MTR,BWD,speed)
+			time.sleep(.05)
 		for speed in range(255,100,-1):
 			print(speed)
-			autophat.myMotor.set_drive(R_MTR,FWD,speed)
-			autophat.myMotor.set_drive(L_MTR,BWD,speed)
-			time.sleep(.1)
+			myMotor.set_drive(R_MTR,FWD,speed)
+			myMotor.set_drive(L_MTR,BWD,speed)
+			time.sleep(.05)
 
 if __name__ == '__main__':
-	autophat = Autophat()
+	myMotor=qwiic_scmd.QwiicScmd()
 	try:
 		runExample()
 	except (KeyboardInterrupt, SystemExit) as exErr:
 		print("Ending example.")
-		autophat.myMotor.disable()
+		myMotor.disable()
 		sys.exit(0)
 

@@ -1,73 +1,52 @@
-#!/usr/bin/env python
-#-----------------------------------------------------------------------------
-# A simple test to speed up and slow down both motors in opposite directions.
-#------------------------------------------------------------------------
+# Initio Motor Test
+# Moves: Forward, Reverse, turn Right, turn Left, Stop - then repeat
+# Press Ctrl-C to stop
 #
-# Written by Mark Lindemer
-# SparkFun Electronics, April 2020
-# 
-# This python library supports the SparkFun Electroncis qwiic 
-# qwiic sensor/board ecosystem on a Raspberry Pi (and compatable) single
-# board computers. 
-#
-# More information on qwiic is at https://www.sparkfun.com/qwiic
-#
-# Do you like this library? Help support SparkFun. Buy a board!
-#
-#==================================================================================
-# Copyright (c) 2019 SparkFun Electronics
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy 
-# of this software and associated documentation files (the "Software"), to deal 
-# in the Software without restriction, including without limitation the rights 
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell 
-# copies of the Software, and to permit persons to whom the Software is 
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all 
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE 
-# SOFTWARE.
-#==================================================================================
-# Example 1
-#
+# To check wiring is correct ensure the order of movement as above is correct
+# Run using: sudo python motorTest2.py
 
 from __future__ import print_function
 import time
+#======================================================================
+# Reading single character by forcing stdin to raw mode
 import sys
+import tty
+import termios
+
 import math
 import qwiic_scmd
 
 class Autophat:
 
 	def __init__(self):
-		myMotor = qwiic_scmd.QwiicScmd()
+		self.myMotor = qwiic_scmd.QwiicScmd()
 
 		self.R_MTR = 0
 		self.L_MTR = 1
 		self.FWD = 0
 		self.BWD = 1
 
-		if myMotor.connected == False:
+		if self.myMotor.connected == False:
 			print("Motor Driver not connected. Check connections.", \
 				file=sys.stderr)
 			return
-		myMotor.begin()
+		self.myMotor.begin()
 		print("Motor initialized.")
 		time.sleep(.250)
 
-		# Zero speeds
-		myMotor.set_drive(0,0,150)
-		myMotor.set_drive(1,1,150)
+		self.myMotor.set_drive(0,0,0)
+		self.myMotor.set_drive(1,1,0)
+
+		self.myMotor.inversion_mode(1,1)
+
+		self.myMotor.enable()
+		print("Motor enabled.")
+		time.sleep(.250)
+
+
 
 	def forward(self, speed):
-		self.myMotor.set_drive(self.R_MTR, self.FWD, spee)
+		self.myMotor.set_drive(self.R_MTR, self.FWD, speed)
 		self.myMotor.set_drive(self.L_MTR, self.FWD, speed)
 
 	def reverse(self, speed):
@@ -89,52 +68,76 @@ class Autophat:
 	def cleanup(self):
 		self.myMotor.disable()
 
-
-def runExample():
-
-	print("Motor Test.")
-	R_MTR = 0
-	L_MTR = 1
-	FWD = 0
-	BWD = 1
-
-	if myMotor.connected == False:
-		print("Motor Driver not connected. Check connections.", \
-			file=sys.stderr)
-		return
-	myMotor.begin()
-	print("Motor initialized.")
-	time.sleep(.250)
-
-	myMotor.inversion_mode(1,1)
-	
-	# Zero Motor Speeds
-	myMotor.set_drive(0,0,0)
-	myMotor.set_drive(1,0,0)
-	
-	myMotor.enable()
-	print("Motor enabled")
-	time.sleep(.250)
-
-	while True:
-		speed = 100
-		for speed in range(100,255):
-			print(speed)
-			myMotor.set_drive(R_MTR,FWD,speed)
-			myMotor.set_drive(L_MTR,BWD,speed)
-			time.sleep(.05)
-		for speed in range(255,100,-1):
-			print(speed)
-			myMotor.set_drive(R_MTR,FWD,speed)
-			myMotor.set_drive(L_MTR,BWD,speed)
-			time.sleep(.05)
-
-if __name__ == '__main__':
-	myMotor=qwiic_scmd.QwiicScmd()
+def readchar():
+	fd = sys.stdin.fileno()
+	old_settings = termios.tcgetattr(fd)
 	try:
-		runExample()
-	except (KeyboardInterrupt, SystemExit) as exErr:
-		print("Ending example.")
-		myMotor.disable()
-		sys.exit(0)
+		tty.setraw(sys.stdin.fileno())
+		ch = sys.stdin.read(1)
+	finally:
+		termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
+	if ch == '0x03':
+		raise KeyboardInterrupt
+	return ch
 
+def readkey(getchar_fn=None):
+	getchar = getchar_fn or readchar
+	c1 = getchar()
+	if ord(c1) != 0x1b:
+		return c1
+	c2 = getchar()
+	if ord(c2) != 0x5b:
+		return c1
+	c3 = getchar()
+	return chr(0x10 + ord(c3) - 65)  # 16=Up, 17=Down, 18=Right, 19=Left arrows
+
+# End of single character reading
+#======================================================================
+
+speed = 100
+
+print("Tests the motors by using the arrow keys to control")
+print("Use , or < to slow down")
+print("Use . or > to speed up")
+print("Speed changes take effect when the next arrow key is pressed")
+print("Press Ctrl-C to end")
+print()
+
+autophat = Autophat()
+
+# main loop
+try:
+	while True:
+		keyp = readkey()
+		if keyp == 'w' or ord(keyp) == 16:
+			autophat.forward(speed)
+		elif keyp == 's' or ord(keyp) == 17:
+			autophat.reverse(speed)
+			print('Reverse', speed)
+		elif keyp == 'd' or ord(keyp) == 18:
+			autophat.spinRight(speed)
+			print('Spin Right', speed)
+		elif keyp == 'a' or ord(keyp) == 19:
+			autophat.spinLeft(speed)
+			print('Spin Left', speed)
+		elif keyp == '.' or keyp == '>':
+			speed = min(250, speed+10)
+			if (abs(speed) < 100):
+				speed = 100
+			print('Speed+', speed)
+		elif keyp == ',' or keyp == '<':
+			speed = max (0, speed-10)
+			if (abs(speed) < 100):
+				speed = 0
+			print('Speed-', speed)
+		elif keyp == ' ':
+			autophat.stop()
+			print('Stop')
+		elif ord(keyp) == 3:
+			break
+
+except KeyboardInterrupt:
+	print
+
+finally:
+	autophat.cleanup()
