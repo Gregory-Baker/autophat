@@ -5,7 +5,7 @@
 # To check wiring is correct ensure the order of movement as above is correct
 # Run using: sudo python motorTest2.py
 
-
+from __future__ import print_function
 import time
 #======================================================================
 # Reading single character by forcing stdin to raw mode
@@ -13,7 +13,6 @@ import sys
 import tty
 import termios
 
-from __future__ import print_function
 import math
 import qwiic_scmd
 
@@ -35,11 +34,17 @@ class Autophat:
 		print("Motor initialized.")
 		time.sleep(.250)
 
-		# Zero speeds
 		self.myMotor.set_drive(0,0,150)
 		self.myMotor.set_drive(1,1,150)
 
+
 	def forward(self, speed):
+
+		if self.myMotor.connected == False:
+			print("Motor Driver not connected. Check connections.", \
+				file=sys.stderr)
+			return
+
 		self.myMotor.set_drive(self.R_MTR, self.FWD, speed)
 		self.myMotor.set_drive(self.L_MTR, self.FWD, speed)
 
@@ -98,14 +103,22 @@ print("Press Ctrl-C to end")
 print()
 
 autophat = Autophat()
+myMotor = qwiic_scmd.QwiicScmd()
+if myMotor.connected == True:
+	print("connected")
+myMotor.begin()
+time.sleep(.250)
 
 # main loop
 try:
 	while True:
 		keyp = readkey()
 		if keyp == 'w' or ord(keyp) == 16:
-			autophat.forward(speed)
 			print('Forward', speed)
+			while True:
+				myMotor.set_drive(0,0,200)
+				myMotor.set_drive(1,1,200)
+				time.sleep(.05)
 		elif keyp == 's' or ord(keyp) == 17:
 			autophat.reverse(speed)
 			print('Reverse', speed)
