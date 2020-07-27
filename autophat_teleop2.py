@@ -62,9 +62,15 @@ class Autophat:
 		print("Motor initialized.")
 		time.sleep(.250)
 
+		#self.myMotor.inversion_mode(1,1)
+
 		# Zero speeds
 		self.myMotor.set_drive(0,0,0)
 		self.myMotor.set_drive(1,1,0)
+
+		self.myMotor.enable()
+		print("Motor enabled")
+		time.sleep(.250)
 
 	def forward(self, speed):
 		self.myMotor.set_drive(self.R_MTR, self.FWD, speed)
@@ -91,12 +97,12 @@ class Autophat:
 
 
 def runExample():
-	
+
 	R_MTR = 0
 	L_MTR = 1
 	FWD = 0
 	BWD = 1
-	
+
 	speed = 100
 
 	while True:

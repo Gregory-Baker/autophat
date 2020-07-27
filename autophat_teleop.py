@@ -34,17 +34,18 @@ class Autophat:
 		print("Motor initialized.")
 		time.sleep(.250)
 
-		self.myMotor.set_drive(0,0,150)
-		self.myMotor.set_drive(1,1,150)
+		self.myMotor.set_drive(0,0,0)
+		self.myMotor.set_drive(1,1,0)
+
+		self.myMotor.inversion_mode(1,1)
+
+		self.myMotor.enable()
+		print("Motor enabled.")
+		time.sleep(.250)
+
 
 
 	def forward(self, speed):
-
-		if self.myMotor.connected == False:
-			print("Motor Driver not connected. Check connections.", \
-				file=sys.stderr)
-			return
-
 		self.myMotor.set_drive(self.R_MTR, self.FWD, speed)
 		self.myMotor.set_drive(self.L_MTR, self.FWD, speed)
 
@@ -103,22 +104,13 @@ print("Press Ctrl-C to end")
 print()
 
 autophat = Autophat()
-myMotor = qwiic_scmd.QwiicScmd()
-if myMotor.connected == True:
-	print("connected")
-myMotor.begin()
-time.sleep(.250)
 
 # main loop
 try:
 	while True:
 		keyp = readkey()
 		if keyp == 'w' or ord(keyp) == 16:
-			print('Forward', speed)
-			while True:
-				myMotor.set_drive(0,0,200)
-				myMotor.set_drive(1,1,200)
-				time.sleep(.05)
+			autophat.forward(speed)
 		elif keyp == 's' or ord(keyp) == 17:
 			autophat.reverse(speed)
 			print('Reverse', speed)
@@ -129,7 +121,7 @@ try:
 			autophat.spinLeft(speed)
 			print('Spin Left', speed)
 		elif keyp == '.' or keyp == '>':
-			speed = min(200, speed+10)
+			speed = min(250, speed+10)
 			if (abs(speed) < 100):
 				speed = 100
 			print('Speed+', speed)
